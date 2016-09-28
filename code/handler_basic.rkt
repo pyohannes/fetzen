@@ -1,0 +1,22 @@
+#lang racket/base
+
+(provide (all-defined-out))
+(require "parser.rkt")
+(struct writer (file filter preprocess))
+(define (default-writer-file fname)
+  (open-output-file fname #:exists 'replace))
+(define (default-code-writer-filter c)
+  (mode-code? (chunk-mode c)))
+(define (default-docu-writer-filter c)
+  #t)
+(define (default-writer-preprocess c)
+  (chunk-lines c))
+(define (writer-write w chunks)
+  (define (write-lines lines)
+    (map (lambda (l)
+           (fprintf (writer-file w) "~a~n" l))
+         lines))
+  (map write-lines
+       (map (writer-preprocess w)
+            (filter (writer-filter w) chunks))))
+(struct handler (code-writer docu-writer))
