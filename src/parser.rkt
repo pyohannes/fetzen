@@ -1,10 +1,9 @@
-\section{\textit{parser.rkt}}
-```
+;;\section{\textit{parser.rkt}}
+;;```
 #lang racket/base
 
 
-(require racket/file
-         racket/vector)
+(require "utils.rkt")
 
 
 (struct mode (code))
@@ -40,12 +39,6 @@
   #:auto-value (list))
 
 
-(define (startswith? line substr)
-  (let ((len (string-length substr)))
-    (and (>= (string-length line) len)
-         (equal? (substring line 0 len) substr))))
-
-
 (define (comment? line)
   (startswith? line "###"))
 
@@ -54,26 +47,26 @@
   (startswith? line "```"))
 
 
-(define (file->chunks src)
+(define (lines->chunks lines)
 
-  (define (lines->chunks lines c)
+  (define (l->c lines c)
     (if (null? lines)
         (list c)
         (let ((line (car lines))
               (rest (cdr lines))) 
           (cond ((comment? line)
-                 (lines->chunks rest c))
+                 (l->c rest c))
                 ((instruction? line)
                  (cons c
-                   (lines->chunks 
+                   (l->c
                      rest
                      (chunk (line->mode line (chunk-mode c))))))
                 (else
                   (set-chunk-lines! c (append (chunk-lines c) (list line)))
-                  (lines->chunks rest c))))))
+                  (l->c rest c))))))
 
-  (lines->chunks (file->lines src) (chunk (mode-docu-make))))
+  (l->c lines (chunk (mode-docu-make))))
 
 
 (provide (struct-out mode) mode-code? mode-docu? 
-         (struct-out chunk) file->chunks)
+         (struct-out chunk) lines->chunks)

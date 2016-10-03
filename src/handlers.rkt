@@ -1,5 +1,5 @@
-\section{\textit{handlers.rkt}}
-```
+;;\section{\textit{handlers.rkt}}
+;;```
 #lang racket/base
 
 
@@ -10,43 +10,43 @@
 
 (define (text-handler code-file docu-file)
 
-  (define (docu-preprocess c)
+  (define (docu-postprocess c)
     (append (map (lambda (l)
                    (if (mode-docu? (chunk-mode c))
                        l
                        (string-append "  " l)))
-              (default-writer-preprocess c))
+              (default-writer-postprocess c))
             (list "")))
 
   (handler 
     (writer
       (default-writer-file code-file)
       default-code-writer-filter
-      default-writer-preprocess)
+      default-writer-postprocess)
     (writer
       (default-writer-file docu-file)
       default-docu-writer-filter
-      docu-preprocess)))
+      docu-postprocess)))
 
 
 (define (latex-handler code-file docu-file)
 
-  (define (docu-preprocess c)
+  (define (docu-postprocess c)
     (if (mode-code? (chunk-mode c))
       (append (list (string-replace "\\%lstlisting}" "%" "begin{"))
-              (default-writer-preprocess c)
+              (default-writer-postprocess c)
               (list (string-replace "\\%lstlisting}" "%" "end{")))
-      (default-writer-preprocess c)))
+      (default-writer-postprocess c)))
 
   (handler 
     (writer
       (default-writer-file code-file)
       default-code-writer-filter
-      default-writer-preprocess)
+      default-writer-postprocess)
     (writer
       (default-writer-file docu-file)
       default-docu-writer-filter
-      docu-preprocess)))
+      docu-postprocess)))
 
 
 (define *HANDLERS*
