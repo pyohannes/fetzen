@@ -3,6 +3,7 @@ manual=doc/fetzen_manual.pdf
 
 
 code/%.rkt: src/%.rkt
+	mkdir -p code
 	./fetzen -c $@ -d $(@:code/%=doc/%) --handler latex $<
 
 fetzen: $(source)

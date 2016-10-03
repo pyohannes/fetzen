@@ -71,9 +71,9 @@ writer. A line break is added to every line:
 Finally the \textit{write-lines} function is mapped to the filtered and 
 preprocessed lines of the given chunk:
 ```
-  (map write-lines
-       (map (writer-preprocess w)
-            (filter (writer-filter w) chunks))))
+  (for-each write-lines
+    (map (writer-preprocess w)
+         (filter (writer-filter w) chunks))))
 ```
 A \textit{handler} consists of nothing more than two writers: a 
 \textit{code-writer} for writing to the code file and a \textit{docu-writer} for 
