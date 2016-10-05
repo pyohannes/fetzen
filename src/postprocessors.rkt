@@ -3,6 +3,8 @@
 #lang racket/base
 
 (require racket/list
+         racket/string
+         racket/path
          "utils.rkt"
          "data.rkt")
 
@@ -67,18 +69,41 @@
              (struct-copy
                chunk
                c
-               (lines (append (list (line (string-append "\\begin{" "lstlisting}") -1))
+               (lines (append (list (line (string-append "\\begin{" "lstlisting}") -1)) ; to obtuse
                               (chunk-lines c)
-                              (list (line (string-append "\\end{" "lstlisting}") -1)))))]
+                              (list (line (string-append "\\end{" "lstlisting}") -1)))))] ; to obtuse
             [else c]))
     chunks))
 
+
+(define (my-replace s old new)
+  (string-join (string-split s old) new))
+
+
+(define (replace-variables chunks)
+  (map
+    (lambda (c)
+      (struct-copy
+        chunk
+        c
+        (lines (map
+                 (lambda (l)
+                   (struct-copy
+                     line
+                     l
+                     (text (string-replace (line-text l) 
+                                           (string-join '("``(file" "-basename)``") "") ; to obtuse
+                                           (path->string (file-name-from-path (chunk-filename c)))))))
+               (chunk-lines c)))))
+    chunks))
+  
 
 (define *POSTPROCESSORS*
   `(("code" ,code)
     ("code-keep-line-numbers" ,code-keep-line-numbers)
     ("docu-text" ,docu-text)
-    ("docu-latex" ,docu-latex)))
+    ("docu-latex" ,docu-latex)
+    ("replace-variables" ,replace-variables)))
 
 
 (define (string->postprocessor s)

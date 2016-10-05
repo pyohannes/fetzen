@@ -9,31 +9,28 @@
          "preprocessors.rkt")
 
 
-(define (lines->chunks lines)
+(define (file->chunks filename pp)
 
-  (define (l->c lines c)
+  (define (lines->chunks lines c)
     (if (null? lines)
         (list c)
         (let ((l (car lines))
               (rest (cdr lines))) 
           (cond ((line-comment? l)
-                 (l->c rest c))
+                 (lines->chunks rest c))
                 ((line-instruction? l)
                  (cons c
-                   (l->c
+                   (lines->chunks
                      rest
-                     (chunk (line->mode l (chunk-mode c)) '()))))
+                     (chunk (line->mode l (chunk-mode c)) '() filename))))
                 (else
                   (chunk-append-line c l)
-                  (l->c rest c))))))
+                  (lines->chunks rest c))))))
 
-  (l->c lines (chunk (mode-docu-make) '())))
-
-
-(define (file->chunks filename pp)
   (let ([composed-preprocessor (apply compose1 (map string->preprocessor pp))])
     (lines->chunks 
-      (composed-preprocessor (file->enumerated-lines filename)))))
+      (composed-preprocessor (file->enumerated-lines filename))
+      (chunk (mode-docu-make) '() filename))))
 
 
 (define (file->enumerated-lines filename)

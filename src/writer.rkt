@@ -10,9 +10,14 @@
 (struct writer (file postprocessors))
 
 
+(define standard-postprocessors
+  (map string->postprocessor '("replace-variables")))
+
+
 (define (make-writer filename pp-names)
   (writer (open-output-file filename #:exists 'replace)
-          (map string->postprocessor pp-names)))
+          (append standard-postprocessors
+                  (map string->postprocessor pp-names))))
 
 
 (define (writer-write-lines w lines)

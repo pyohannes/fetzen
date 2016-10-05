@@ -47,7 +47,7 @@
   (startswith? (line-text l) "```"))
 
 
-(struct chunk (mode [lines #:mutable]))
+(struct chunk (mode [lines #:mutable] filename))
 
 
 (define (chunk-append-line c l)
