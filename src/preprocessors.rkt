@@ -2,13 +2,19 @@
 ;;```
 #lang racket/base
 
-(require "utils.rkt")
+
+(require "utils.rkt"
+         "data.rkt")
 
 
-(define (uncomment-line-start line pattern)
-  (if (startswith? line pattern)
-      (substring line (string-length pattern))
-      line))
+(define (uncomment-line-start l pattern)
+  (struct-copy 
+    line
+    l
+    (text (let ([text (line-text l)])
+            (if (startswith? text pattern)
+                (substring text (string-length pattern))
+                text)))))
 
 
 (define (uncomment-lines-start pattern)

@@ -4,47 +4,37 @@
 
 
 (require racket/cmdline
-         racket/file
+         racket/string
          "parser.rkt"
-         "handlers.rkt"
-         "preprocessors.rkt")
+         "writer.rkt")
 
 
-(define code-file (make-parameter "fetzen.code"))
-(define docu-file (make-parameter "fetzen.documentation"))
-(define src-file  (make-parameter "fetzen.fet"))
-(define handler-d (make-parameter "text"))
-(define preproc-d (make-parameter "none"))
+(define out-files (make-parameter (list)))
+(define preproc-d (make-parameter (list)))
+(define src-file  (make-parameter ""))
 
 
 (command-line
   #:program "fetzen"
-  #:once-each
-  [("-c" "--code") 
-   code 
-   "Output file for code"
-   (code-file code)]
-  [("-d" "--documentation")
-   docu
-   "Output file for documentation"
-   (docu-file docu)]
-  [("--handler")
-   h
-   "Supported output handlers: text, latex."
-   (handler-d h)]
-  [("--preprocessor")
-   h
+  #:multi
+  [("-p" "--preprocessor")
+   pre 
    "Applies the named preprocessor to the source code."
-   (preproc-d h)]
+   (preproc-d (cons pre (preproc-d)))]
+  [("-o" "--out") 
+   out
+   "Give an output file and the related postprocessors, separated by commas."
+   (out-files (cons (string-split out ",") (out-files)))]
   #:args (filename)
   (src-file filename))
 
 
 (define (main)
-  (let ((handler ((string->handler (handler-d)) (code-file) (docu-file)))
-        (preprocess (string->preprocessor (preproc-d))))
-    (process-chunks handler 
-                    (lines->chunks (preprocess (file->lines (src-file)))))))
+  (process-chunks
+    (map (lambda (out-file)
+           (make-writer (car out-file) (cdr out-file)))
+         (out-files))
+    (file->chunks (src-file) (preproc-d))))
 
 
 (main)

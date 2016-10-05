@@ -3,48 +3,10 @@
 #lang racket/base
 
 
-(require "utils.rkt")
-
-
-(struct mode (code))
-
-
-(define (mode-docu-make)
-  (mode #f))
-
-
-(define (mode-code-make)
-  (mode #t))
-
-
-(define (mode-code? mode)
-  (mode-code mode))
-
-
-(define (mode-docu? mode)
-  (not (mode-code? mode)))
-
-
-(define (mode-reverse mode)
-  (if (mode-docu? mode)
-      (mode-code-make)
-      (mode-docu-make)))
-
-
-(define (line->mode line oldmode)
-  (mode-reverse oldmode))
-
-
-(struct chunk (mode [lines #:auto #:mutable])
-  #:auto-value (list))
-
-
-(define (comment? line)
-  (startswith? line "###"))
-
-
-(define (instruction? line)
-  (startswith? line "```"))
+(require racket/file
+         racket/list
+         "data.rkt"
+         "preprocessors.rkt")
 
 
 (define (lines->chunks lines)
@@ -52,21 +14,33 @@
   (define (l->c lines c)
     (if (null? lines)
         (list c)
-        (let ((line (car lines))
+        (let ((l (car lines))
               (rest (cdr lines))) 
-          (cond ((comment? line)
+          (cond ((line-comment? l)
                  (l->c rest c))
-                ((instruction? line)
+                ((line-instruction? l)
                  (cons c
                    (l->c
                      rest
-                     (chunk (line->mode line (chunk-mode c))))))
+                     (chunk (line->mode l (chunk-mode c)) '()))))
                 (else
-                  (set-chunk-lines! c (append (chunk-lines c) (list line)))
+                  (chunk-append-line c l)
                   (l->c rest c))))))
 
-  (l->c lines (chunk (mode-docu-make))))
+  (l->c lines (chunk (mode-docu-make) '())))
 
 
-(provide (struct-out mode) mode-code? mode-docu? 
-         (struct-out chunk) lines->chunks)
+(define (file->chunks filename pp)
+  (let ([composed-preprocessor (apply compose1 (map string->preprocessor pp))])
+    (lines->chunks 
+      (composed-preprocessor (file->enumerated-lines filename)))))
+
+
+(define (file->enumerated-lines filename)
+  (let ([lines (file->lines filename)])
+    (map
+      line
+      lines (range 1 (+ (length lines) 1)))))
+
+
+(provide file->chunks)

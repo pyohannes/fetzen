@@ -1,1 +1,1 @@
---handler latex
+--out <DIR>/documentation,docu-latex --out <DIR>/code,code

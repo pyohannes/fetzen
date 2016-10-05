@@ -1,11 +1,11 @@
-source=code/parser.rkt code/handlers.rkt code/handler_basic.rkt \
-       code/fetzen.rkt code/utils.rkt code/preprocessors.rkt
+source=code/parser.rkt code/writer.rkt code/fetzen.rkt code/utils.rkt \
+       code/preprocessors.rkt code/postprocessors.rkt code/data.rkt
 manual=doc/fetzen_manual.pdf
 
 
 code/%.rkt: src/%.rkt fetzen_bootstrap
 	mkdir -p code
-	./fetzen -c $@ -d $(@:code/%=doc/%) --handler latex \
+	./fetzen --out $@,code --out $(@:code/%=doc/%),docu-latex \
 	    --preprocessor uncomment-double-semicolon $<
 
 fetzen: $(source)
@@ -32,6 +32,7 @@ $(manual): $(manual:%.pdf=%.tex) $(source:code/%.rkt=doc/%.rkt)
 	pdflatex $(shell basename $(manual:%.pdf=%.tex))
 
 doc/%.rkt: src/%.rkt
-	./fetzen -c $@ -d $(@:code/%=doc/%) --handler latex $<
+	./fetzen --out $@,code --out $(@:code/%=doc/%),docu-latex \
+	    --preprocessor uncomment-double-semicolon $<
 
 all: fetzen

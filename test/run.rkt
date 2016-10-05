@@ -13,6 +13,13 @@
   (string-join paths "/"))
 
 
+(define (make-temporary-dir)
+  (let ((path (make-temporary-file)))
+    (delete-file path)
+    (make-directory* path)
+    path))
+
+
 (define (test-file-content-equal? src dst)
   (check-equal? (string-trim (file->string src) "\n")
                 (string-trim (file->string dst) "\n")))
@@ -31,21 +38,21 @@
 
 (define (create-test-for-directory dir)
   (test-case (string-join `("Test for directory" ,dir) " ")
-    (let* ((src (file-join *TESTDATADIR* dir "fetzen"))
-           (ref-code (file-join *TESTDATADIR* dir "code"))
-           (ref-docu (file-join *TESTDATADIR* dir "documentation"))
-           (argsfile (file-join *TESTDATADIR* dir "arguments"))
-           (args (if (file-exists? argsfile)
-                     (string-split (file->string argsfile))
-                     '()))
-           (dst-code (make-temporary-file))
-           (dst-docu (make-temporary-file)))
-      (apply system* 
-             (append '("fetzen")
-                     args
-                     `("--code" ,dst-code "--documentation" ,dst-docu ,src)))
-      (test-file-content-equal? ref-code dst-code)
-      (test-file-content-equal? ref-docu dst-docu))))
+    (let* ((testdir  (file-join *TESTDATADIR* dir))
+           (src      (file-join testdir "fetzen"))
+           (argsfile (file-join testdir "arguments"))
+           (tempdir  (path->string (make-temporary-dir)))
+           (args     (string-split
+                       (string-replace (file->string argsfile)
+                                       "<DIR>"
+                                       tempdir))))
+      (apply system* `("fetzen" ,@args ,src))
+      (for-each 
+        (lambda (fname)
+          (unless (member fname '("fetzen" "arguments"))
+            (test-file-content-equal? (file-join testdir fname)
+                                      (file-join tempdir fname))))
+        (map path->string (directory-list testdir))))))
 
 
 (run-tests fetzen-files)

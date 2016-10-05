@@ -1,1 +1,1 @@
---handler latex --preprocessor uncomment-double-semicolon
+--preprocessor uncomment-double-semicolon --out <DIR>/documentation,docu-latex --out <DIR>/code,code
