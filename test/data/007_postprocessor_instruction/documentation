@@ -1,0 +1,5 @@
+This is documentation of fetzen.
+This is documentation of ``(file-basename)``.
+
+  (define (this-is-code) 0)
+

@@ -6,37 +6,51 @@
 (require "utils.rkt")
 
 
-(struct mode (code))
+(struct mode (code postprocessor-names))
 
 
 (define (mode-docu-make)
-  (mode #f))
+  (mode 'docu '()))
 
 
 (define (mode-code-make)
-  (mode #t))
+  (mode 'code '()))
 
 
 (define (mode-code? mode)
-  (mode-code mode))
+  (eq? (mode-code mode) 'code))
 
 
 (define (mode-docu? mode)
-  (not (mode-code? mode)))
+  (eq? (mode-code mode) 'docu))
 
 
-(define (mode-reverse mode)
-  (if (mode-docu? mode)
-      (mode-code-make)
-      (mode-docu-make)))
-
+(define (mode-code-reverse code)
+  (if (eq? code 'code)
+      'docu
+      'code))
 
 
 (struct line (text number))
 
 
-(define (line->mode line oldmode)
-  (mode-reverse oldmode))
+(define (line->mode l oldmode)
+
+  (define (read-instruction text)
+    (let ([instr (read (open-input-string (substring text 3)))])
+      (if (list? instr)
+          instr
+          '())))
+
+  (define (get-instruction instr key default)
+    (let ([i (assoc key instr)])
+      (if i
+          (cadr i)
+          default)))
+
+  (let ([instr (read-instruction (line-text l))])
+    (mode (get-instruction instr 'mode (mode-code-reverse (mode-code oldmode)))
+          (get-instruction instr 'post '()))))
 
 
 (define (line-comment? l)

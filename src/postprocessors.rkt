@@ -96,6 +96,17 @@
                                            (path->string (file-name-from-path (chunk-filename c)))))))
                (chunk-lines c)))))
     chunks))
+
+
+(define (chunk-postprocessors chunks)
+  (map
+    (lambda (c)
+      (list-ref 
+        ((apply compose1 (map string->postprocessor 
+                              (mode-postprocessor-names (chunk-mode c))))
+         (list c))
+        0))
+    chunks))
   
 
 (define *POSTPROCESSORS*
@@ -103,7 +114,11 @@
     ("code-keep-line-numbers" ,code-keep-line-numbers)
     ("docu-text" ,docu-text)
     ("docu-latex" ,docu-latex)
-    ("replace-variables" ,replace-variables)))
+    ("replace-variables" ,replace-variables)
+    ("chunk-postprocessors" ,chunk-postprocessors)))
+
+
+(define *default-postprocessors* '("chunk-postprocessors"))
 
 
 (define (string->postprocessor s)
@@ -113,4 +128,4 @@
     (cadr postprocessor)))
 
 
-(provide string->postprocessor)
+(provide string->postprocessor *default-postprocessors*)

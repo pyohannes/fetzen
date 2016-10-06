@@ -1,0 +1,6 @@
+```((mode docu) (post ("replace-variables")))
+This is documentation of ``(file-basename)``.
+```((mode docu))
+This is documentation of ``(file-basename)``.
+```
+(define (this-is-code) 0)

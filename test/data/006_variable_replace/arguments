@@ -1,1 +1,1 @@
---out <DIR>/documentation,docu-text --out <DIR>/code,code 
+--out <DIR>/documentation,docu-text,replace-variables --out <DIR>/code,code 
