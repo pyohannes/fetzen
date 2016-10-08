@@ -1,4 +1,4 @@
-;;```((mode docu) (post ("replace-variables")))
+;;```((mode "documentation") (post ("replace-variables")))
 ;;\section{\textit{``(file-basename)``}}
 ;;
 ;;This module contains utility functions that are used by other parts of the

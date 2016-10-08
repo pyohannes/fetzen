@@ -9,12 +9,21 @@
          "data.rkt")
 
 
-(define (code? chunk)
-  (mode-code? (chunk-mode chunk)))
+(define (code? c)
+  (equal? (chunk-mode c) "code"))
 
 
 (define (code chunks)
   (filter code? chunks))
+
+
+(define (chunk-postprocessor-names cs)
+  (if (hash-has-key? (chunk-rules cs) 'post)
+      (let ([post (hash-ref (chunk-rules cs) 'post)])
+        (if (list? post)
+            post
+            (list post)))
+      '()))
 
 
 (define (code-keep-line-numbers chunks)
@@ -103,7 +112,7 @@
     (lambda (c)
       (list-ref 
         ((apply compose1 (map string->postprocessor 
-                              (mode-postprocessor-names (chunk-mode c))))
+                              (chunk-postprocessor-names c)))
          (list c))
         0))
     chunks))
