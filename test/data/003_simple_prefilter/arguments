@@ -1,1 +1,1 @@
---preprocessor uncomment-double-semicolon --out <DIR>/documentation,docu-latex --out <DIR>/code,code
+--preprocessor uncomment-;; --out <DIR>/documentation,docu-latex --out <DIR>/code,code

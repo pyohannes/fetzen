@@ -6,7 +6,7 @@ manual=doc/fetzen_manual.pdf
 code/%.rkt: src/%.rkt fetzen_bootstrap
 	mkdir -p code
 	./fetzen --out $@,code --out $(@:code/%=doc/%),docu-latex \
-	    --preprocessor uncomment-double-semicolon $<
+	    --preprocessor "uncomment-;;" $<
 
 fetzen: $(source)
 	raco exe -o fetzen code/fetzen.rkt
@@ -33,6 +33,6 @@ $(manual): $(manual:%.pdf=%.tex) $(source:code/%.rkt=doc/%.rkt)
 
 doc/%.rkt: src/%.rkt
 	./fetzen --out $@,code --out $(@:code/%=doc/%),docu-latex \
-	    --preprocessor uncomment-double-semicolon $<
+	    --preprocessor "uncomment-;;" $<
 
 all: fetzen
