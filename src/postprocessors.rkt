@@ -10,7 +10,7 @@
 
 
 (define (code? c)
-  (equal? (chunk-mode c) "code"))
+  (equal? (chunk-mode c) 'code))
 
 
 (define (code chunks)
