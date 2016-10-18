@@ -97,7 +97,7 @@
 
 ;;```
 ;;Next some string constants are defined. Those constans define the basic 
-;;elements of \textit{fetzen} files and rules.
+;;elements of \textit{fetzen} files and rules as described above:
 ;;```
 (define <COMMENT-PREFIX> "###")
 (define <RULE-ID> "```")
@@ -105,40 +105,77 @@
 (define <CODE-ID> 'code)
 (define <DOCU-ID> 'docu)
 (define <POST-ID> 'post)
-
-
+;;```
+;;The next two predicates \textit{line-comment?} and \textit{line-rule?} help 
+;;to determine if a line of a source file is a comment or a rule line. All 
+;;lines for which both predicates are false is a \textit{fetzen} source line:
+;;```
 (define (line-comment? l)
   (startswith? (line-text l) <COMMENT-PREFIX>))
 
-
-(define (line-instruction? l)
+(define (line-rule? l)
   (startswith? (line-text l) <RULE-ID>))
-
-
+;;```
+;;The rules on the rule line are given as an association list. To obtain a
+;;Scheme object from the line firstly the rule prefix is stripped, then
+;;secondly the text is piped through the \textit{read} function which returns
+;;an association list: 
+;;```
+(define (rule-line->rules l)
+  (read 
+    (open-input-string (substring (line-text l)
+                                  (string-length <RULE-ID>)))))
+;;```
+;;The function \textit{file$\rightarrow$enumerated-lines} build on the racket
+;;function \textit{file$\rightarrow$lines}. Whereas 
+;;\textit{file$\rightarrow$lines} returns a list of strings, 
+;;\textit{file$\rightarrow$enumerated-lines} returns a list of \textit{line} 
+;;structs holding both the string and the corresponding line number:
+;;```
 (define (file->enumerated-lines filename)
   (let ([lines (file->lines filename)])
     (map
       line
       lines (range 1 (+ (length lines) 1)))))
 
-
-(define (line->chunk l filename old-chunk)
-
-  (define (reverse-mode old-mode)
-    (if (equal? old-mode <CODE-ID>)
+;;```
+;;Every rule line marks the beginning of a new chunk. Conveniently the function
+;;\textit{rule$\rightarrow$chunk} initializes a new chunk based on a rule line.
+;;The function relies on the fact that the passed line \textit{l} is a rule
+;;line. Further arguments are the name of the file the line originates from in
+;;\textit{filename} and the chunk preceding the new chunk in
+;;\textit{pre-chunk}. The filename is needed because every chunk holds the name
+;;of the file it was created from. The preceding chunk is needed to implement
+;;the default alternation of code and documentation chunks when no mode is
+;;explicitly given in the rule.
+;;```
+(define (rule->chunk l filename pre-chunk)
+;;```
+;;The little helper function \textit{reverse-mode} finally implements this
+;;alteration: 
+;;```
+  (define (reverse-mode mode)
+    (if (equal? mode <CODE-ID>)
         <DOCU-ID>
         <CODE-ID>))
-
-  (chunk
-    '()
-    filename
-    (apply hash (append (list <MODE-ID> (reverse-mode (chunk-mode old-chunk)))
-                        (let ([instr (read (open-input-string (substring (line-text l) 3)))])
-                          (if (list? instr)
-                              (flatten instr)
-                              '()))))))
-
-
+;;```
+;;An empty chunk is initialized. It points to the file \textit{filename},
+;;however it is initialized empty and holds no code lines yet. The rules in
+;;the hash table are initialized from the rules line. The mode is set to the
+;;default mode (the reversed mode from the previous chunk). This mode is
+;;overriden if a mode is given in the rules line.
+;;```
+  (let* ([default-mode (reverse-mode (chunk-mode pre-chunk))]
+         [rules (rule-line->rules l)])
+    (chunk
+      '()
+      filename
+      (hash* (append (list <MODE-ID> default-mode)
+                     (if (list? rules)
+                         (flatten rules)
+                         '()))))))
+;;```
+;;```
 (define (file->chunks filename pp)
 
   (define (lines->chunks lines c)
@@ -148,11 +185,11 @@
               (rest (cdr lines))) 
           (cond ((line-comment? l)
                  (lines->chunks rest c))
-                ((line-instruction? l)
+                ((line-rule? l)
                  (cons c
                    (lines->chunks
                      rest
-                     (line->chunk l filename c))))
+                     (rule->chunk l filename c))))
                 (else
                   (chunk-append-line c l)
                   (lines->chunks rest c))))))
