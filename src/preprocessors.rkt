@@ -55,17 +55,19 @@
 ;;function for a string identifier. The mapping of string identifiers to
 ;;functions is stored in the \tc{*preprocessors*} hash table:
 ;;```
-(define *preprocessors*
-  (hash "uncomment-;;" (uncomment-lines-start ";;")))
+(define-string-transformer string->preprocessor
+  #:store
+    *preprocessors*
+  #:error
+    (lambda (s)
+      (error "Unsupported preprocessor: " s))
+  #:values
+    `(("uncomment-;;" ,(uncomment-lines-start ";;"))))
 ;;```
 ;;The function \tc{string$\rightarrow$preprocessor} returns the preprocessor function
 ;;for the preprocessor string identifier given in \tc{s}. If no matching
 ;;entry in the hash table exists an error is raised:
 ;;```
-(define (string->preprocessor s)
-  (if (hash-has-key? *preprocessors* s)
-      (hash-ref *preprocessors* s)
-      (error "Unsupported preprocessor: " s)))
 ;;```
 ;;From this module the function \tc{string$\rightarrow$preprocessor} and the hash
 ;;table \tc{*preprocessors*} are exported. The user can extend this hash

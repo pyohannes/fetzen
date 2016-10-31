@@ -116,25 +116,24 @@
          (list c))
         0))
     chunks))
-  
 
-(define *POSTPROCESSORS*
-  `(("code" ,code)
-    ("code-keep-line-numbers" ,code-keep-line-numbers)
-    ("docu-text" ,docu-text)
-    ("docu-latex" ,docu-latex)
-    ("replace-variables" ,replace-variables)
-    ("chunk-postprocessors" ,chunk-postprocessors)))
+
+(define-string-transformer string->postprocessor
+  #:store
+    *POSTPROCESSORS*
+  #:error 
+    (lambda (s)
+      (error "Unsupported postprocessor: " s))
+  #:values
+    `(("code" ,code)
+      ("code-keep-line-numbers" ,code-keep-line-numbers)
+      ("docu-text" ,docu-text)
+      ("docu-latex" ,docu-latex)
+      ("replace-variables" ,replace-variables)
+      ("chunk-postprocessors" ,chunk-postprocessors)))
 
 
 (define *default-postprocessors* '("chunk-postprocessors"))
-
-
-(define (string->postprocessor s)
-  (let ((postprocessor (assoc s *POSTPROCESSORS*)))
-    (unless postprocessor
-      (error "Unsupported postprocessor: " s))
-    (cadr postprocessor)))
 
 
 (provide string->postprocessor *default-postprocessors*)

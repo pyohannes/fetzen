@@ -7,6 +7,9 @@
 ;;The \tc{racket/base} library is used:
 ;;```
 #lang racket/base
+
+(require (for-syntax racket/base)
+         racket/list)
 ;;```
 ;;The function \tc{startswith?} returns \tc{\#t} if the string 
 ;;\tc{line} starts with the string \tc{substr} and \tc{\#f} 
@@ -23,6 +26,20 @@
 ;;```
 (define (hash* lst)
   (apply hash lst))
+;;```
+;;```
+(define-syntax (define-string-transformer stx)
+  (syntax-case stx ()
+    [(_ name
+        #:store hash-name
+        #:error error-handler
+        #:values key-value-pairs)
+     #'(begin
+         (define hash-name (hash* (flatten key-value-pairs)))
+         (define (name s)
+           (if (hash-has-key? hash-name s)
+               (hash-ref hash-name s)
+               (error-handler s))))]))
 ;;```
 ;;All defined functions are exported:
 ;;```
