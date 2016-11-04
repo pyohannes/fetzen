@@ -79,12 +79,12 @@
 ;;```
 #lang racket/base
 ;;```
-;;The function \tc{file$\rightarrow$lines} from the racket module 
+;;The function \tc{file->lines} from the racket module 
 ;;\tc{racket/file} is used to read the \tc{fetzen} source file, the racket
 ;;module \tc{racket/list} is required due to the use of the \tc{range}
 ;;function. The \tc{startswith?} function from \tc{utils.rkt} is used
 ;;to check if lines are comments or rules.
-;;\tc{string$\rightarrow$preprocessor} from \tc{preprocessors.rkt} is
+;;\tc{string->preprocessor} from \tc{preprocessors.rkt} is
 ;;used to obtain preprocessor functions that are then applied to the raw
 ;;source lines. Finally the parsed data is read into
 ;;the data structures \tc{chunk} and \tc{line} defined in 
@@ -128,10 +128,10 @@
       (substring (line-text l) 
                  (string-length <RULE-PREFIX>)))))
 ;;```
-;;The function \tc{file$\rightarrow$enumerated-lines} builds on the racket
-;;function \tc{file$\rightarrow$lines}. Whereas 
-;;\tc{file$\rightarrow$lines} returns a list of strings, 
-;;\tc{file$\rightarrow$enumerated-lines} returns a list of \tc{line} 
+;;The function \tc{file->enumerated-lines} builds on the racket
+;;function \tc{file->lines}. Whereas 
+;;\tc{file->lines} returns a list of strings, 
+;;\tc{file->enumerated-lines} returns a list of \tc{line} 
 ;;structs holding both the string and the corresponding line number:
 ;;```
 (define (file->enumerated-lines filename)
@@ -142,7 +142,7 @@
 
 ;;```
 ;;Every rule line marks the beginning of a new chunk. Conveniently the function
-;;\tc{rule$\rightarrow$chunk} initializes a new chunk based on a rule line.
+;;\tc{rule->chunk} initializes a new chunk based on a rule line.
 ;;The function relies on the fact that the passed line \tc{l} is a rule
 ;;line. Further arguments are the name of the file the line originates from in
 ;;\tc{filename} and the chunk preceding the new chunk in
@@ -177,7 +177,7 @@
                          (flatten rules)
                          '()))))))
 ;;```
-;;The function \tc{file$\rightarrow$chunks} is the only function the parser
+;;The function \tc{file->chunks} is the only function the parser
 ;;module exposes. In the argument \tc{filename} the name of a fetzen source
 ;;file is passed, in \tc{pp} a list of names of preprocessors is passed:
 ;;```
@@ -191,14 +191,14 @@
   (define (apply-preprocessors lines)
     ((apply compose1 (map string->preprocessor pp)) lines))
 ;;```
-;;The main work is done in the helper function \tc{lines$\rightarrow$chunks}.
+;;The main work is done in the helper function \tc{lines->chunks}.
 ;;It accepts a list of \tc{line} structs in \tc{lines} and a \tc{chunk} struct \tc{c} to 
 ;;start adding lines to. The function transforms all lines into a list of
 ;;chunks and returns this list. 
 ;;
 ;;Comment lines are skipped. For rule lines the current chunk struct \tc{c} is
 ;;added to the result and a new chunk is initialized via the
-;;\tc{rule$\rightarrow$chunk} function. For all other lines (source code lines)
+;;\tc{rule->chunk} function. For all other lines (source code lines)
 ;;the line is added to the current chunk struct:
 ;;```
   (define (lines->chunks lines c)
@@ -218,7 +218,7 @@
                   (lines->chunks rest c))))))
 ;;```
 ;;Finally the two helper functions \tc{apple-preprocessors} and
-;;\tc{lines$\rightarrow$chunks} are combined. \tc{lines$\rightarrow$chunks} is
+;;\tc{lines->chunks} are combined. \tc{lines->chunks} is
 ;;called with a list of \tc{line} structs that where transformed by the
 ;;\tc{apply-preprocessors} function. The initial chunk passed is an empty
 ;;documentation chunk, as the alternation of code and documentation chunks by
@@ -230,6 +230,6 @@
     (apply-preprocessors (file->enumerated-lines filename))
     (chunk '() filename (hash <MODE-KEY> <DOCU-VALUE>))))
 ;;```
-;;Only the function \tc{file$\rightarrow$chunks} is exported:
+;;Only the function \tc{file->chunks} is exported:
 ;;```
 (provide file->chunks)

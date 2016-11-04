@@ -68,7 +68,7 @@
   "uncomment-;;" (uncomment-lines-start ";;"))
 ;;```
 ;;From this module the hash table \tc{*preprocessors*} and the access function
-;;\tc{string$\rightarrow$preprocessor} are exported. The user can extend the 
+;;\tc{string->preprocessor} are exported. The user can extend the 
 ;;hash table with user defined preprocessors.
 ;;```
 (provide *preprocessors* string->preprocessor)
