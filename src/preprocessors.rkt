@@ -49,26 +49,26 @@
            (uncomment-single-line l))
          lines)))
 ;;```
-;;The user is not granted direct access to the preprocessor functions in this
-;;module. The user specifies preprocessor via string identifiers on the command
-;;line. The function \tc{string$\rightarrow$preprocessor} returns the preprocessor
-;;function for a string identifier. The mapping of string identifiers to
-;;functions is stored in the \tc{*preprocessors*} hash table:
+;;All available preprocessors are stored in the \tc{*preprocessors*} hash
+;;table. This table maps string identifiers to preprocessor functions. This 
+;;hash table can be extended by the user.
 ;;```
-(define *preprocessors*
-  (hash "uncomment-;;" (uncomment-lines-start ";;")))
+(define *preprocessors* (make-hash))
 ;;```
-;;The function \tc{string$\rightarrow$preprocessor} returns the preprocessor function
-;;for the preprocessor string identifier given in \tc{s}. If no matching
-;;entry in the hash table exists an error is raised:
+;;The use of the helper function \tc{string->predecessor} to access the hash
+;;table increases code readability:
 ;;```
-(define (string->preprocessor s)
-  (if (hash-has-key? *preprocessors* s)
-      (hash-ref *preprocessors* s)
-      (error "Unsupported preprocessor: " s)))
+(define (string->preprocessor s) 
+  (hash-ref *preprocessors* s))
 ;;```
-;;From this module the function \tc{string$\rightarrow$preprocessor} and the hash
-;;table \tc{*preprocessors*} are exported. The user can extend this hash
-;;table by user defined preprocessors.
+;;The only predecessor defined by default is the \tc{uncomment-;;}
+;;preprocessor:
 ;;```
-(provide string->preprocessor *preprocessors*)
+(hash-set*! *preprocessors* 
+  "uncomment-;;" (uncomment-lines-start ";;"))
+;;```
+;;From this module the hash table \tc{*preprocessors*} and the access function
+;;\tc{string$\rightarrow$preprocessor} are exported. The user can extend the 
+;;hash table with user defined preprocessors.
+;;```
+(provide *preprocessors* string->preprocessor)

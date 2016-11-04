@@ -111,30 +111,28 @@
   (map
     (lambda (c)
       (list-ref 
-        ((apply compose1 (map string->postprocessor 
+        ((apply compose1 (map string->postprocessor
                               (chunk-postprocessor-names c)))
          (list c))
         0))
     chunks))
   
 
-(define *POSTPROCESSORS*
-  `(("code" ,code)
-    ("code-keep-line-numbers" ,code-keep-line-numbers)
-    ("docu-text" ,docu-text)
-    ("docu-latex" ,docu-latex)
-    ("replace-variables" ,replace-variables)
-    ("chunk-postprocessors" ,chunk-postprocessors)))
+(define *postprocessors* (make-hash))
+
+(define (string->postprocessor s) 
+  (hash-ref *postprocessors* s))
+
+(hash-set*! *postprocessors* 
+  "code" code
+  "code-keep-line-numbers" code-keep-line-numbers
+  "docu-text" docu-text
+  "docu-latex" docu-latex
+  "replace-variables" replace-variables
+  "chunk-postprocessors" chunk-postprocessors)
 
 
 (define *default-postprocessors* '("chunk-postprocessors"))
 
 
-(define (string->postprocessor s)
-  (let ((postprocessor (assoc s *POSTPROCESSORS*)))
-    (unless postprocessor
-      (error "Unsupported postprocessor: " s))
-    (cadr postprocessor)))
-
-
-(provide string->postprocessor *default-postprocessors*)
+(provide *default-postprocessors* *postprocessors* string->postprocessor)
