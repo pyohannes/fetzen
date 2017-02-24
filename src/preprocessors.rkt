@@ -65,7 +65,8 @@
 ;;preprocessor:
 ;;```
 (hash-set*! *preprocessors* 
-  "uncomment-;;" (uncomment-lines-start ";;"))
+  "uncomment-;;" (uncomment-lines-start ";;")
+  "uncomment-#" (uncomment-lines-start "#"))
 ;;```
 ;;From this module the hash table \tc{*preprocessors*} and the access function
 ;;\tc{string->preprocessor} are exported. The user can extend the 
